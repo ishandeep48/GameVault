@@ -18,6 +18,7 @@ yarn-error.log
 /backend/*.db
 /backend/*.sqlite*
 /backend/logs/
+/backend/.backend
 
 # Build artifacts
 /frontend/dist/
