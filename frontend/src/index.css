@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================
+   GameVault — Design Tokens (Dark-First)
+   ========================================== */
+
+@layer base {
+  :root {
+    /* Background palette */
+    --bg-primary: #0B0F1A;
+    --bg-secondary: #131825;
+    --bg-tertiary: #1C2236;
+
+    /* Text palette */
+    --text-primary: #F0F0F5;
+    --text-secondary: #9CA3AF;
+    --text-muted: #6B7280;
+
+    /* Accent colors */
+    --accent-primary: #7C5CFC;
+    --accent-secondary: #3B82F6;
+
+    /* Status colors */
+    --status-playing: #10B981;
+    --status-completed: #7C5CFC;
+    --status-on-hold: #F59E0B;
+    --status-dropped: #EF4444;
+    --status-plan-to-play: #6366F1;
+
+    /* Glassmorphism */
+    --glass-bg: rgba(19, 24, 37, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: 12px;
+
+    /* Focus ring */
+    --focus-ring: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent-primary);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Focus visible for accessibility */
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: 0.375rem;
+  }
+
+  /* Selection color */
+  ::selection {
+    background-color: rgba(124, 92, 252, 0.3);
+    color: var(--text-primary);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+}
+
+/* ==========================================
+   Base Component Styles
+   ========================================== */
+
+@layer components {
+  /* Glassmorphism utility */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+  }
+
+  /* Card base style */
+  .card {
+    @apply bg-gv-bg-secondary border border-white/[0.06] rounded-gv-md p-4 md:p-6 transition-colors duration-200;
+  }
+
+  .card-hover:hover {
+    @apply bg-gv-bg-tertiary;
+  }
+
+  /* Button base */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-gv-sm font-medium text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gv-accent focus-visible:ring-offset-gv-bg-primary disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply bg-gv-accent text-white hover:bg-[#6B4FE0] active:bg-[#5E45CC];
+  }
+
+  .btn-secondary {
+    @apply border border-gv-accent/30 text-gv-accent hover:bg-gv-accent/10;
+  }
+
+  .btn-ghost {
+    @apply text-gv-text-secondary hover:text-gv-text-primary hover:bg-white/[0.05];
+  }
+
+  .btn-danger {
+    @apply bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20;
+  }
+
+  /* Input base */
+  .input {
+    @apply w-full px-4 py-2.5 bg-gv-bg-secondary border border-white/[0.08] rounded-gv-sm text-gv-text-primary placeholder-gv-text-muted text-sm transition-colors duration-200 focus:border-gv-accent/50 focus:ring-1 focus:ring-gv-accent/30 outline-none;
+  }
+
+  /* Badge / Status pill */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-playing {
+    @apply bg-status-playing/10 text-status-playing border border-status-playing/20;
+  }
+
+  .badge-completed {
+    @apply bg-status-completed/10 text-status-completed border border-status-completed/20;
+  }
+
+  .badge-on-hold {
+    @apply bg-status-on-hold/10 text-status-on-hold border border-status-on-hold/20;
+  }
+
+  .badge-dropped {
+    @apply bg-status-dropped/10 text-status-dropped border border-status-dropped/20;
+  }
+
+  .badge-plan-to-play {
+    @apply bg-status-plan-to-play/10 text-status-plan-to-play border border-status-plan-to-play/20;
+  }
+}
+
+/* ==========================================
+   Utility Classes
+   ========================================== */
+
+@layer utilities {
+  /* Text truncation for long content */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

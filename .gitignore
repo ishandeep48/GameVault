@@ -1,0 +1,41 @@
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# Node modules & dependencies
+/node_modules
+npm-debug.log*
+yarn-error.log
+.linttemp/
+
+# Python virtual environments (backend/)
+/backend/.venv/
+/backend/*.egg-info/
+/backend/build/
+/backend/eggs/
+/backend/*.db
+/backend/*.sqlite*
+/backend/logs/
+
+# Build artifacts
+/frontend/dist/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Python cache (backend/)
+/backend/__pycache__/
+*.pyc
+
+# Coverage & Testing Reports
+coverage.xml
+.nyc_output/
+*.lcov
