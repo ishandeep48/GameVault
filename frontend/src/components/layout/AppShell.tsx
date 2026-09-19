@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 import { Header } from './Header'
@@ -18,6 +19,7 @@ interface AppShellProps {
  */
 export function AppShell({ children, className }: AppShellProps) {
   const location = useLocation()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   // Determine if we're on a nested route that needs breadcrumbs
   const isNestedRoute = location.pathname.includes('/games/') && !location.pathname.endsWith('/')
@@ -29,7 +31,7 @@ export function AppShell({ children, className }: AppShellProps) {
 
       <div className="flex flex-1 min-h-0">
         {/* Sidebar — desktop only (lg+) */}
-        <Sidebar />
+        <Sidebar collapsed={sidebarCollapsed} onCollapsedChange={() => setSidebarCollapsed((collapsed) => !collapsed)} />
 
         {/* Main content area */}
         <main

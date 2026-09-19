@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Search, ArrowUpDown } from 'lucide-react'
 import type { GameStatus } from '@/types'
 import { GameCard } from '@/components/games/GameCard'
+import { LockedOverlay } from '@/components/ui/LockedOverlay'
+import { useAuth } from '@/hooks/useAuth'
 
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -30,6 +32,7 @@ const SORTS: { key: LibrarySort; label: string }[] = [
 /** Placeholder — Library Page */
 export default function LibraryPage() {
   const navigate = useNavigate()
+  const { authenticated, openLoginModal } = useAuth()
   const [userGames, setUserGames] = useState<libraryService.UserGame[]>([])
   const [_stats, setStats] = useState<{ total: number; byStatus: Record<GameStatus, number> } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -44,6 +47,13 @@ export default function LibraryPage() {
   // Fetch data on mount
   useEffect(() => {
     let cancelled = false
+
+    if (!authenticated) {
+      setLoading(false)
+      return () => {
+        cancelled = true
+      }
+    }
 
     async function loadData() {
       try {
@@ -72,7 +82,7 @@ export default function LibraryPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [authenticated])
 
   // Filter and sort games (memoized for performance)
   const filteredGames = useMemo(() => {
@@ -108,6 +118,37 @@ export default function LibraryPage() {
   // Handle game card click
   const handleGameClick = (gameId: string) => {
     navigate(`/games/${gameId}`)
+  }
+
+  // Auth-gated actions
+  const handleLogin = () => {
+    openLoginModal('/library')
+  }
+
+  const handleSignup = () => {
+    navigate('/signup', { state: { from: '/library' } })
+  }
+
+  if (!authenticated) {
+    return (
+      <div className="px-4 md:px-6 py-6 space-y-6">
+        <header>
+          <h1 className="text-2xl md:text-3xl font-bold text-gv-text-primary tracking-tight mb-1">Library</h1>
+          <p className="text-sm text-gv-text-secondary">Your games, your progress.</p>
+        </header>
+        <div className="relative" aria-label="Library requires authentication">
+          <LibraryLockedSkeleton />
+          <LockedOverlay
+            title="Please Login to Use the Library"
+            description="Sign in to access your personal game library and track your progress."
+            actionLabel="Login"
+            secondaryActionLabel="Create an Account"
+            onAction={handleLogin}
+            onSecondaryAction={handleSignup}
+          />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -299,6 +340,23 @@ function SkeletonGameCard() {
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-3 w-2/3" />
         <Skeleton className="h-1.5 w-full mt-3 rounded-full" />
+      </div>
+    </div>
+  )
+}
+
+function LibraryLockedSkeleton() {
+  return (
+    <div className="space-y-6" aria-hidden="true">
+      <div className="space-y-3">
+        <Skeleton className="h-10 max-w-md" />
+        <div className="flex flex-wrap gap-2">
+          {[...Array(5)].map((_, index) => <Skeleton key={index} className="h-8 w-20 rounded-full" />)}
+        </div>
+        <Skeleton className="h-3 w-20" />
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+        {[...Array(10)].map((_, index) => <SkeletonGameCard key={index} />)}
       </div>
     </div>
   )

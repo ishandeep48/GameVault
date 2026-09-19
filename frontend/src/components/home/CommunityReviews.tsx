@@ -8,12 +8,14 @@ import { EmptyState } from '@/components/ui/EmptyState'
 export interface CommunityReviewsProps {
   reviews: CommunityReviewType[]
   loading?: boolean
+  authRequired?: boolean
+  onAuthRequired?: () => void
 }
 
 /**
  * Small selection of recent community reviews.
  */
-export function CommunityReviews({ reviews, loading }: CommunityReviewsProps) {
+export function CommunityReviews({ reviews, loading, authRequired = false, onAuthRequired }: CommunityReviewsProps) {
   if (loading) {
     return <CommunityReviewsSkeleton />
   }
@@ -44,7 +46,7 @@ export function CommunityReviews({ reviews, loading }: CommunityReviewsProps) {
 
       <div className="space-y-4">
         {reviews.map((review) => (
-          <ReviewCardWithContext key={review.id} review={review} />
+          <ReviewCardWithContext key={review.id} review={review} authRequired={authRequired} onAuthRequired={onAuthRequired} />
         ))}
       </div>
     </section>
@@ -53,9 +55,11 @@ export function CommunityReviews({ reviews, loading }: CommunityReviewsProps) {
 
 interface ReviewCardWithContextProps {
   review: CommunityReviewType
+  authRequired: boolean
+  onAuthRequired?: () => void
 }
 
-function ReviewCardWithContext({ review }: ReviewCardWithContextProps) {
+function ReviewCardWithContext({ review, authRequired, onAuthRequired }: ReviewCardWithContextProps) {
   // Build context label (game or mission being reviewed)
   const contextParts: string[] = []
   if (review.gameTitle) contextParts.push(review.gameTitle)
@@ -82,6 +86,8 @@ function ReviewCardWithContext({ review }: ReviewCardWithContextProps) {
         createdAt={review.createdAt}
         likes={review.likes}
         dislikes={review.dislikes}
+        authRequired={authRequired}
+        onAuthRequired={onAuthRequired}
       />
     </div>
   )

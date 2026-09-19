@@ -19,6 +19,10 @@ export interface ReviewCardProps {
   onLike?: () => void
   onDislike?: () => void
   onReply?: () => void
+  /** When true, actions require authentication */
+  authRequired?: boolean
+  /** Called when an action is clicked while auth is required (e.g. navigate to login) */
+  onAuthRequired?: () => void
   className?: string
 }
 
@@ -40,6 +44,8 @@ export function ReviewCard({
   onLike,
   onDislike,
   onReply,
+  authRequired = false,
+  onAuthRequired,
   className,
 }: ReviewCardProps) {
   const [showAllContent, setShowAllContent] = useState(false)
@@ -100,17 +106,19 @@ export function ReviewCard({
       {/* Actions bar */}
       <div className="flex items-center gap-1 pt-2 border-t border-white/[0.06]">
         {/* Like button */}
-        <Tooltip content={isLiked ? 'Unlike' : 'Like'} position="bottom">
+        <Tooltip content={authRequired ? 'Login to like' : isLiked ? 'Unlike' : 'Like'} position="bottom">
           <button
             type="button"
-            onClick={onLike}
+            onClick={() => authRequired && onAuthRequired ? onAuthRequired() : (!authRequired ? onLike?.() : undefined)}
             className={cn(
               'inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors',
-              isLiked
-                ? 'text-gv-accent bg-gv-accent/10'
-                : 'text-gv-text-muted hover:text-gv-text-primary hover:bg-white/[0.05]',
+              authRequired
+                ? 'text-gv-text-muted cursor-pointer hover:text-gv-accent'
+                : isLiked
+                  ? 'text-gv-accent bg-gv-accent/10'
+                  : 'text-gv-text-muted hover:text-gv-text-primary hover:bg-white/[0.05]',
             )}
-            aria-label={isLiked ? 'Unlike this review' : 'Like this review'}
+            aria-label={isLiked ? 'Unlike this review' : authRequired ? 'Login to like this review' : 'Like this review'}
           >
             <ThumbsUp size={14} className={cn(isLiked && 'fill-current')} />
             {likes || ''}
@@ -118,17 +126,19 @@ export function ReviewCard({
         </Tooltip>
 
         {/* Dislike button */}
-        <Tooltip content={isDisliked ? 'Remove dislike' : 'Dislike'} position="bottom">
+        <Tooltip content={authRequired ? 'Login to dislike' : isDisliked ? 'Remove dislike' : 'Dislike'} position="bottom">
           <button
             type="button"
-            onClick={onDislike}
+            onClick={() => authRequired && onAuthRequired ? onAuthRequired() : (!authRequired ? onDislike?.() : undefined)}
             className={cn(
               'inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors',
-              isDisliked
-                ? 'text-red-400 bg-red-500/10'
-                : 'text-gv-text-muted hover:text-gv-text-primary hover:bg-white/[0.05]',
+              authRequired
+                ? 'text-gv-text-muted cursor-pointer hover:text-red-400'
+                : isDisliked
+                  ? 'text-red-400 bg-red-500/10'
+                  : 'text-gv-text-muted hover:text-gv-text-primary hover:bg-white/[0.05]',
             )}
-            aria-label={isDisliked ? 'Remove dislike' : 'Dislike this review'}
+            aria-label={isDisliked ? 'Remove dislike' : authRequired ? 'Login to dislike this review' : 'Dislike this review'}
           >
             <ThumbsDown size={14} className={cn(isDisliked && 'fill-current')} />
             {dislikes || ''}
@@ -137,12 +147,17 @@ export function ReviewCard({
 
         {/* Reply button */}
         {onReply && (
-          <Tooltip content="Reply" position="bottom">
+          <Tooltip content={authRequired ? 'Login to reply' : 'Reply'} position="bottom">
             <button
               type="button"
-              onClick={onReply}
-              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-gv-text-muted hover:text-gv-text-primary hover:bg-white/[0.05] transition-colors"
-              aria-label={`Reply to ${username}'s review`}
+              onClick={() => authRequired && onAuthRequired ? onAuthRequired() : (!authRequired ? onReply?.() : undefined)}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors',
+                authRequired
+                  ? 'text-gv-text-muted cursor-pointer hover:text-gv-accent'
+                  : 'text-gv-text-muted hover:text-gv-text-primary hover:bg-white/[0.05]',
+              )}
+              aria-label={authRequired ? `Login to reply to ${username}'s review` : `Reply to ${username}'s review`}
             >
               <MessageSquare size={14} />
               Reply

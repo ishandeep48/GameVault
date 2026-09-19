@@ -579,9 +579,225 @@ Next phase will implement:
 - Tabs: Overview | Missions | Reviews
 - Review summary with average rating
 
-## Known Issues
+---
+
+## Authentication — Current State
+
+**Status:** Frontend mock authentication implemented. Backend NOT connected.
+**Priority:** CURRENT PRIORITY (normal feature roadmap temporarily paused)
+
+### Architecture
+
+**Current (Mock):**
+```
+React UI
+    ↓
+Auth Context / Hook
+    ↓
+Mock Auth Service
+    ↓
+Hardcoded frontend values + localStorage
+```
+
+**Future (Real Backend):**
+```
+React UI
+    ↓
+Auth Context / Hook
+    ↓
+Auth Service
+    ↓
+FastAPI
+    ↓
+PostgreSQL
+```
+
+The UI layer does NOT need to be redesigned when the mock service is replaced with the real API.
+
+### Permanent Demo Account
+
+```
+Email:    demo@gamevault.local
+Password: GameVault@123
+Name:     Demo User
+DOB:      2000-01-01
+ID:       demo-user
+```
+
+This is the ONLY hardcoded credential. Stored in `src/services/authService.ts`.
+
+### Temporary Signup Users
+
+Created entirely in the frontend via signup form. Used only for development/testing.
+No fake database exists. No multiple registered accounts are persisted.
+Each signup creates one temporary session that survives browser refresh (via localStorage).
+
+Session data stored in localStorage key `gamevault_auth_session`:
+```json
+{
+  "authenticated": true,
+  "user": {
+    "id": "mock-signup-<timestamp>",
+    "firstName": "...",
+    "lastName": "...",
+    "email": "...",
+    "dob": "YYYY-MM-DD",
+    "createdAt": "ISO timestamp"
+  }
+}
+```
+
+Passwords are NEVER stored, logged, or persisted.
+
+### Auth Files Created
+
+| File | Purpose |
+|------|---------|
+| `src/types/auth.ts` | User, AuthState, LoginFormData, SignupFormData types |
+| `src/services/authService.ts` | Mock auth service — login, signup, session management, validation |
+| `src/contexts/AuthContext.tsx` | React Context Provider with login/logout/state |
+| `src/hooks/useAuth.ts` | Hook that consumes AuthContext |
+| `src/components/ui/PasswordInput.tsx` | Password field with show/hide toggle |
+| `src/components/layout/AuthLayout.tsx` | Shared centered card layout for auth pages |
+| `src/components/layout/PrivateRoute.tsx` | Protected route wrapper component |
+| `src/pages/LoginPage.tsx` | Login form page |
+| `src/pages/SignupPage.tsx` | Signup form page |
+
+### Files Modified for Auth Integration
+
+| File | Change |
+|------|--------|
+| `src/main.tsx` | Wrapped app in `<AuthProvider>` |
+| `src/App.tsx` | Added auth routes, protected routing, redirects |
+| `src/components/layout/Header.tsx` | User dropdown menu + logout integration |
+| `src/components/layout/Sidebar.tsx` | User info section + logout button |
+| `src/components/layout/MobileNavigation.tsx` | Auth-aware navigation tabs |
+| `src/pages/ProfilePage.tsx` | Full profile implementation (was placeholder) |
+| `src/types/index.ts` | Added auth type exports |
+
+### Protected Routes (Updated for Public Browsing V1)
+
+**Public:** `/login`, `/signup`, `/home`, `/games/:gameId`, `/games/:gameId/missions/:missionId`, `/community`
+**Auth-gated (shows locked state):** `/library`
+**Protected (redirects to login):** `/profile`
+
+Unauthenticated users accessing protected routes → redirected to `/login`.
+Authenticated users visiting `/login` or `/signup` → redirected to `/home`.
+Root `/` redirects to `/home`.
+Catch-all `*` redirects to `/home`.
+
+### Profile Implementation
+
+Displays from auth context (not hardcoded):
+- First Name, Last Name, Email, Date of Birth, Member Since
+- Avatar with initials fallback
+- Logout button within profile page
+- Security note about mock authentication
+
+### Shell Integration
+
+**Header:** User initials + name dropdown when authenticated; "Sign In" link when not.
+Dropdown contains: Profile link, Logout button.
+
+**Sidebar:** User info (initials + name) when authenticated; "Sign In" link when not. Logout button.
+
+**MobileNavigation:** Home/Library/Community/Profile/Logout tabs when authenticated.
+Home/Community/Sign-In tabs when not authenticated (Library requires login).
+
+### Validation Rules
+
+**Login:** Email required + valid format, Password required.
+**Signup:** First name required, Last name required, DOB required, Valid email, Password ≥ 6 chars, Confirm password must match. Duplicate demo email check.
+
+### Error Messages
+
+- Login failure: "Invalid email or password." (does not reveal which credential was wrong)
+- Signup duplicate demo email: "An account with this email already exists."
+- Per-field validation errors displayed near relevant fields
+
+### Known Issues
 
 None at this time.
+
+---
+
+## Public Browsing + Auth-Gated Features (V1)
+
+**Status:** COMPLETED. All pages accessible without login; user-specific features gated with LockedOverlay and authRequired props.
+
+### Route Access Rules
+
+| Route | Public? | Unauthenticated Behavior |
+|-------|---------|--------------------------|
+| `/login` | ✅ Yes | Shows login form |
+| `/signup` | ✅ Yes | Shows signup form |
+| `/home` | ✅ Yes | ActivityFeed + ProgressOverview hidden; ContinuePlaying/LibrarySection show LockedOverlay |
+| `/games/:gameId` | ✅ Yes | Full game details, missions, reviews readable by all |
+| `/games/:gameId/missions/:missionId` | ✅ Yes | Mission info + reviews readable by all |
+| `/community` | ✅ Yes | All reviews browsable; interactions gated |
+| `/library` | ⚠️ Partial | Shows LockedOverlay with skeleton structure underneath |
+| `/profile` | ❌ No | Redirects to `/login` (PrivateRoute) |
+
+### New Component: LockedOverlay (`src/components/ui/LockedOverlay.tsx`)
+
+Reusable component for auth-gated sections. Props:
+- `title` — heading text (default: "Login Required")
+- `description` — explanatory text
+- `onLogin` — callback when login button clicked
+- `onCreateAccount` — optional callback for signup link
+- `children` — content rendered underneath the translucent overlay
+
+Visual design: dark semi-transparent overlay (`bg-black/60`) with backdrop blur, centered lock icon, title, description, and CTA buttons.
+
+### ReviewCard Auth Gating (`src/components/reviews/ReviewCard.tsx`)
+
+New props added:
+- `authRequired?: boolean` — when true, action buttons show login hint tooltips
+- `onAuthRequired?: () => void` — callback triggered when an action button is clicked while authRequired is true (typically navigates to `/login`)
+
+This abstraction lets parent components decide what happens on auth-required clicks without ReviewCard knowing about routing.
+
+### Navigation Auth Gating
+
+All three nav components use `authRequired?: boolean` flag on navigation items:
+- **Header** (`src/components/layout/Header.tsx`) — Library and Profile links redirect to `/login` when unauthenticated
+- **Sidebar** (`src/components/layout/Sidebar.tsx`) — Same pattern as Header
+- **MobileNavigation** (`src/components/layout/MobileNavigation.tsx`) — Hides Library tab for unauthenticated users; shows Sign In button instead
+
+### Files Created (Public Browsing V1)
+
+| File | Purpose |
+|------|---------|
+| `src/components/ui/LockedOverlay.tsx` | Reusable locked-section overlay component |
+| `Logics/AUTH_LOGIC.md` | Auth logic reference for backend integration |
+
+### Files Modified (Public Browsing V1)
+
+| File | Change |
+|------|--------|
+| `src/App.tsx` | Made `/home`, `/games/:gameId`, `/games/:gameId/missions/:missionId`, `/community` public routes; changed `/library` to render directly with locked state |
+| `src/pages/HomePage.tsx` | Conditionally hide ActivityFeed + ProgressOverview when unauthenticated; wrap ContinuePlaying + LibrarySection with LockedOverlay |
+| `src/pages/LibraryPage.tsx` | Show LockedOverlay when unauthenticated (replaces PrivateRoute redirect) |
+| `src/pages/GameDetailsPage.tsx` | Full public page: game info, missions tab, reviews tab; "Add to Library" gated |
+| `src/pages/MissionDetailPage.tsx` | Full public page: mission info, reviews section; interactions gated |
+| `src/pages/CommunityPage.tsx` | Public browsing with search/filter; review actions gated via ReviewCard authRequired |
+| `src/components/layout/Header.tsx` | Added authRequired flag to nav items; redirect unauthenticated clicks on Library/Profile to login |
+| `src/components/layout/Sidebar.tsx` | Same pattern as Header for sidebar navigation |
+| `src/components/layout/MobileNavigation.tsx` | Filter navItems by authRequired when unauthenticated; show Sign In button instead of Library tab |
+| `src/components/reviews/ReviewCard.tsx` | Added authRequired + onAuthRequired props for action gating |
+
+### Protected Routes (Updated)
+
+**Public:** `/login`, `/signup`, `/home`, `/games/:gameId`, `/games/:gameId/missions/:missionId`, `/community`
+**Auth-gated (shows locked state):** `/library`
+**Protected (redirects to login):** `/profile`
+
+### What NOT to Change When Connecting FastAPI
+
+- `LockedOverlay.tsx` — backend-agnostic, reusable for any auth-gated section
+- `ReviewCard.tsx` `authRequired`/`onAuthRequired` pattern — works regardless of auth backend
+- All page components' public content rendering — they only consume `useAuth()`, don't implement auth logic
+- Route structure (public vs protected split) — should remain the same
 
 ## Future Work
 
@@ -594,12 +810,34 @@ None at this time.
 - Machine learning features
 - Redis caching layer
 - Microservices architecture
-- User authentication system (will be added after core UI is built)
+- User authentication system — mock auth is implemented; real FastAPI integration in Phase 10
+- Play status selector & progress bar on Game Details page — deferred until backend connected
 
 ### Planned for Later Phases
 
 - Light mode support (Phase 12+)
 - Advanced animations and page transitions (Phase 13+)
 - Real API integration with FastAPI (Phase 10)
-- Authentication flow (separate phase)
+- Authentication flow — mock auth is implemented; real auth via FastAPI + PostgreSQL is Phase 10
+- Play status selector & progress bar on Game Details page — deferred until backend connected
 - WebSocket connections for real-time updates (future)
+
+## Controlled Frontend Audit — Checkpoint (2026-09-19)
+
+**Status: identified, not yet fixed.** Current source has TypeScript build failures in `GameDetailsPage.tsx` and `MissionDetailPage.tsx`; the primary causes are stale type references, a missing `Tabs` import, and use of `MissionRow` with a `mission` object prop it does not accept. `CommunityPage.tsx` already imports `Link`, so its reported undefined-Link runtime error is not present in this checkout. Public/private behavior requires correction: the reusable `LockedOverlay` is not structurally attached to its protected content, and logged-out Library can render mock personal games. Gated in-app actions currently navigate to `/login`; requirements call for a Login modal while preserving direct `/login` and `/signup` routes.
+
+### Group 1 result (2026-09-19)
+
+**Completed.** `npm run build` now passes after correcting stale type references, importing `Tabs`, using `MissionRow`'s actual prop contract, and removing unused imports. `npm run lint` has no errors; its remaining warnings are pre-existing React advisory rules. `CommunityPage.tsx` already had the required `Link` import.
+
+### Group 2 result (2026-09-19)
+
+**Completed.** The app now stores Login-modal visibility and return path in `AuthContext`; `LoginModal` handles gated in-app sign-in without removing `/login` or `/signup`. The overlay component is truly absolute, so protected Home sections retain their visible structure under the lock. The logged-out Library is a non-sensitive skeleton and does not load mock personal games. Public game, mission, and community reading remains available; Community reaction gates open the modal; Profile remains a redirecting private route.
+
+### Groups 3–5 final consistency result (2026-09-19)
+
+**Completed.** Mission game lookup uses a regular static service import; no ineffective dynamic import remains. Home and Community use the same `ReviewCard` auth-gate behavior. Manual visual checks confirmed public Home reviews, public game/mission browsing, public Community search/reviews, the locked Library route, modal login gates, and the Profile redirect. Remaining limitations are intentional: all data/authentication are mock frontend implementations, and review/comment creation and threads are not yet implemented.
+
+### Navigation polish (2026-09-19)
+
+The left desktop sidebar is stateful within `AppShell`: it can collapse to an accessible icon-only rail. Its surface uses dark translucent glass styling and preserves labeled controls through `aria-label`, tooltip titles, and screen-reader-only labels. Signup name examples are John Doe.
