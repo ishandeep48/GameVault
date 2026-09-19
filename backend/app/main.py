@@ -11,6 +11,7 @@ def root():
     "message": "GameVault API is walking"
     }
 
+# Database test
 from app.db.database import engine
 
 @app.get("/db-test")
@@ -22,6 +23,10 @@ def db_test():
             "database": "connected",
             "result": result.scalar()
         }
+
+# Include all the routers here 
+from app.routers import api_router
+app.include_router(api_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
