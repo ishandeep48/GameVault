@@ -48,10 +48,10 @@ async def signupUser(user_data:UserSignUp,db:AsyncSession):
 from fastapi import Depends
 from app.db.database import get_db
 # Service to login a user an return a acces token
-async def loginUser(user:UserLogin , db:AsyncSession= Depends(get_db)):
+async def loginUser(user:UserLogin , db:AsyncSession):
     result = await db.execute(
         select(User).where(
-            User.id == user.username
+            User.username == user.username
         )
     )
     user_db= result.scalar_one_or_none()
@@ -71,7 +71,7 @@ async def loginUser(user:UserLogin , db:AsyncSession= Depends(get_db)):
             detail="Incorrect username or password"
         )
     
-    token = create_access_token(user_db.id)
+    token = create_access_token(str(user_db.id))
     
     return token
     

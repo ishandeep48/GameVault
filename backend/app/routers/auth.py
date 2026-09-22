@@ -39,10 +39,10 @@ async def signup_route(user:UserSignUp,response:Response,db:AsyncSession = Depen
     
 from app.services.auth_services import loginUser
 @router.post("/login")
-async def login_route(user:UserLogin,respone:Response):
+async def login_route(user:UserLogin,respone:Response,db:AsyncSession=Depends(get_db)):
     
-    token = await loginUser(user)
-    
+    token = await loginUser(user,db)
+    print(token)
     respone.set_cookie(
         key="access_token",
         value=token,
