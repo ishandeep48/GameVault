@@ -1,6 +1,9 @@
-from backend.app.db.database import engine
-from models import Base
+from app.db.database import engine
+from app.models import Base
 
 # Create all tables in the database based on the defined models. This line ensures that the
 #  database schema is created according to the models defined in the `Users` module.
-Base.metadata.create_all(bind=engine)
+
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

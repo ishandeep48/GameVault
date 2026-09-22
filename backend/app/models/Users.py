@@ -6,7 +6,6 @@ from uuid import UUID,uuid4
 
 
 
-
 class User(Base):
     __tablename__ = "users"
 
