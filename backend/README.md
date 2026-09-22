@@ -45,7 +45,7 @@ pip install fastapi uvicorn sqlalchemy asyncpg pydantic-settings bcrypt alembic
 Create a `.env` file in the backend directory:
 
 ```env
-DATABASE_URL=postgresql+asyncpg://postgres:2004@localhost:5432/gamevault
+DATABASE_URL=postgresql+asyncpg://postgres:<your_password>@localhost:5432/gamevault
 ```
 
 The database URL format follows SQLAlchemy's asyncpg connection string syntax.
@@ -142,7 +142,7 @@ Ensure PostgreSQL is running and accessible:
 pg_isready -h localhost -p 5432
 
 # Test connection
-psql postgresql+asyncpg://postgres:2004@localhost:5432/gamevault
+psql postgresql+asyncpg://postgres:<your_password>@localhost:5432/gamevault
 ```
 
 ### Port Already in Use
