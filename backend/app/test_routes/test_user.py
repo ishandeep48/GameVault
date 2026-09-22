@@ -15,6 +15,6 @@ async def get_user_list(db:AsyncSession=Depends(get_db)):
         select(User)
     )
     
-    rows = result.all()
+    rows = result.scalars().all()
     
     return rows
