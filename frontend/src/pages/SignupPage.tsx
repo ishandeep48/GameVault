@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { AuthLayout } from '@/components/layout/AuthLayout'
 import { useAuth } from '@/hooks/useAuth'
-import { validateSignup, signup as mockSignup } from '@/services/authService'
+import { validateSignup, signup as authSignup } from '@/services/authService'
 
 export default function SignupPage() {
   const navigate = useNavigate()
   const { login: setAuthenticated } = useAuth()
 
+  const [username, setUsername] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -27,7 +28,7 @@ export default function SignupPage() {
     setGeneralError('')
 
     // Frontend validation
-    const validationErrors = validateSignup({ firstName, lastName, email, dob, password, confirmPassword })
+    const validationErrors = validateSignup({ username, firstName, lastName, email, dob, password, confirmPassword })
     if (validationErrors) {
       setErrors(validationErrors)
       return
@@ -36,7 +37,7 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      const result = await mockSignup({ firstName, lastName, email: email.trim(), dob, password, confirmPassword })
+      const result = await authSignup({ username: username.trim(), firstName, lastName, email: email.trim(), dob, password, confirmPassword })
       if ('error' in result) {
         setGeneralError(result.error)
         return
@@ -68,6 +69,18 @@ export default function SignupPage() {
           </div>
         )}
 
+        <Input
+          label="Username"
+          type="text"
+          placeholder="gamer123"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          error={errors.username}
+          helperText="3 to 30 characters"
+          autoComplete="username"
+          required
+        />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="First Name"
@@ -87,7 +100,6 @@ export default function SignupPage() {
             onChange={(e) => setLastName(e.target.value)}
             error={errors.lastName}
             autoComplete="family-name"
-            required
           />
         </div>
 
@@ -118,6 +130,7 @@ export default function SignupPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
+          helperText="At least 8 characters"
           autoComplete="new-password"
           required
         />

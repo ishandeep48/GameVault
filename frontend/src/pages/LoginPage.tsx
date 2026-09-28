@@ -11,9 +11,9 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { authenticate } = useAuth()
 
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
+  const [errors, setErrors] = useState<{ username?: string; password?: string; general?: string }>({})
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
@@ -21,14 +21,14 @@ export default function LoginPage() {
     setErrors({})
 
     // Frontend validation
-    const validationError = validateLogin({ email, password })
+    const validationError = validateLogin({ username, password })
     if (validationError) {
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setErrors({ email: 'Please enter a valid email address' })
-      } else if (!email) {
-        setErrors({ email: 'Email is required' })
-      } else {
+      if (!username) {
+        setErrors({ username: 'Username is required' })
+      } else if (!password) {
         setErrors({ password: 'Password is required' })
+      } else {
+        setErrors({ general: validationError })
       }
       return
     }
@@ -36,7 +36,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await authenticate({ email, password })
+      const result = await authenticate({ username, password })
       if (result.error) {
         setErrors({ general: result.error })
         return
@@ -67,14 +67,13 @@ export default function LoginPage() {
         )}
 
         <Input
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          error={errors.email}
-          helperText="Demo: demo@gamevault.local"
-          autoComplete="email"
+          label="Username"
+          type="text"
+          placeholder="Enter your username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          error={errors.username}
+          autoComplete="username"
           required
         />
 
@@ -83,7 +82,7 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
-          helperText="Demo: GameVault@123"
+          helperText="At least 8 characters"
           autoComplete="current-password"
           required
         />

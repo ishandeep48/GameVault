@@ -1,5 +1,6 @@
 export interface User {
   id: string
+  username?: string
   firstName: string
   lastName: string
   email: string
@@ -13,7 +14,7 @@ export interface AuthState {
 }
 
 export interface LoginFormData {
-  email: string
+  username: string
   password: string
 }
 
@@ -22,10 +23,11 @@ export interface LoginRequestResult {
 }
 
 export interface SignupFormData {
+  username: string
   firstName: string
-  lastName: string
+  lastName?: string
   email: string
-  dob: string
+  dob?: string
   password: string
-  confirmPassword: string
+  confirmPassword?: string
 }

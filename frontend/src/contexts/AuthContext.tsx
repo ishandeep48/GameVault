@@ -37,8 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ user: null, authenticated: false })
   }, [])
 
-  const authenticate = useCallback(async ({ email, password }: LoginFormData): Promise<LoginRequestResult> => {
-    const result = await mockLogin({ email: email.trim(), password })
+  const authenticate = useCallback(async ({ username, password }: LoginFormData): Promise<LoginRequestResult> => {
+    const result = await mockLogin({ username: username.trim(), password })
     if ('error' in result) {
       return { error: result.error }
     }
