@@ -12,6 +12,7 @@ A game-library and progress-tracking application frontend built with React, Vite
 - **Lucide React** — Icon library
 - **clsx + tailwind-merge** — Conditional class merging
 - **oxlint** — Linting and code quality
+- **Axios** — HTTP client with cookie support
 
 ## Getting Started
 
@@ -45,13 +46,71 @@ npm run preview
 
 ```
 src/
-├── components/        # Reusable UI components
-│   └── ui/           # Shared UI primitives (Skeleton, EmptyState, ErrorState)
-├── pages/            # Route-level page components
-├── services/         # Data layer (API integration)
-├── hooks/            # Custom React hooks
+├── components/
+│   ├── auth/         # Authentication-related components
+│   │   └── LoginModal.tsx
+│   ├── games/        # Game-specific components
+│   │   └── GameCard.tsx
+│   ├── home/         # Home page components
+│   │   ├── ContinuePlaying.tsx      # Recently played section
+│   │   ├── LibrarySection.tsx       # User's game library preview
+│   │   ├── ActivityFeed.tsx         # Recent activity timeline
+│   │   ├── CommunityReviews.tsx     # Social reviews feed
+│   │   └── ProgressOverview.tsx     # Overall progress stats
+│   ├── layout/       # Layout and navigation components
+│   │   ├── Header.tsx              # Top navigation bar with user menu
+│   │   ├── MobileNavigation.tsx    # Responsive mobile drawer
+│   │   ├── Sidebar.tsx             # Desktop sidebar navigation
+│   │   ├── AppShell.tsx            # Main layout wrapper
+│   │   ├── AuthLayout.tsx          # Layout for auth pages (login/signup)
+│   │   ├── Breadcrumb.tsx          # Navigation breadcrumbs
+│   │   ├── Footer.tsx              # Page footer
+│   │   └── PrivateRoute.tsx        # Route guard for protected routes
+│   ├── missions/     # Mission tracking components
+│   │   └── MissionRow.tsx          # Individual mission display row
+│   ├── pages/        # Page-level components (route views)
+│   │   ├── HomePage.tsx            # Landing page with activity feed
+│   │   ├── LibraryPage.tsx         # User's complete game library
+│   │   ├── GameDetailsPage.tsx     # Detailed game info and missions
+│   │   ├── MissionDetailPage.tsx   # Individual mission view
+│   │   ├── CommunityPage.tsx       # Social reviews and discussions
+│   │   ├── ProfilePage.tsx         # User profile with DOB display
+│   │   ├── LoginPage.tsx           # Login form (username/password)
+│   │   └── SignupPage.tsx          # Registration (with password confirmation)
+│   └── ui/           # Shared UI primitives and base components
+│       ├── Button.tsx              # Primary action buttons
+│       ├── Input.tsx               # Text input fields
+│       ├── Select.tsx              # Dropdown selectors
+│       ├── Avatar.tsx              # User avatar component
+│       ├── Badge.tsx               # Status badges (playing, completed)
+│       ├── Card.tsx                # Content cards with hover effects
+│       ├── Modal.tsx               # Dialog/modals
+│       ├── Tabs.tsx                # Tabbed interfaces
+│       ├── ProgressBar.tsx         # Progress bars for game completion
+│       ├── Skeleton.tsx            # Loading skeletons
+│       ├── ErrorState.tsx          # Error display states
+│       ├── EmptyState.tsx          # Empty list states
+│       ├── Tooltip.tsx             # Tooltips and help text
+│       └── Toast.tsx               # Notification toasts
+├── pages/            # Route-level page components (same as above)
+├── services/         # Data layer with API integration
+│   ├── api.ts                    # Axios instance with cookie support
+│   ├── authService.ts            # Auth operations (login, signup, logout)
+│   ├── games.ts                  # Game CRUD and search operations
+│   ├── homeService.ts            # Home page data aggregation
+│   ├── libraryService.ts         # Library filtering and sorting
+│   ├── missions.ts               # Mission tracking and progress
+│   ├── progress.ts               # Progress updates for missions
+│   └── reviews.ts                # Review creation and reactions
+├── hooks/            # Custom React hooks (user session, auth guards)
 ├── types/            # TypeScript type definitions
-├── utils/            # Utility functions
+│   ├── User.ts                   # User model with DOB field
+│   ├── Game.ts                   # Game data structure
+│   ├── Mission.ts                # Mission and act tracking
+│   ├── Progress.ts               # Progress records per mission
+│   ├── Review.ts                 # Reviews, comments, reactions
+│   └── index.ts                  # Type exports
+├── utils/            # Utility functions (validation, formatters)
 └── assets/           # Static files and media
 ```
 
@@ -65,10 +124,25 @@ This project follows a phased development approach. See [PLAN.md](../PLAN.md) fo
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start development server with hot reload |
+| `npm run dev` | Start development server with hot reload (http://localhost:5173) |
 | `npm run build` | Build for production |
-| `npm run lint` | Run oxlint for code quality checks |
 | `npm run preview` | Preview production build locally |
+| `npm run lint` | Run oxlint for code quality checks |
+
+## Authentication Flow
+
+The application uses cookie-based authentication with the following endpoints:
+
+- **Signup**: POST `/api/v1/auth/signup` — Requires username, email, password, date of birth, and password confirmation
+- **Login**: POST `/api/v1/auth/login` — Uses username (not email) for login
+- **Logout**: POST `/api/v1/auth/logout` — Clears the access_token cookie
+
+The `authService.ts` handles all authentication operations with proper validation:
+- Username must be 3-30 characters
+- Email must be valid format
+- Password minimum 8 characters
+- Date of birth is required for signup
+- Password confirmation must match
 
 ## Design System
 

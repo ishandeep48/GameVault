@@ -9,6 +9,7 @@ FastAPI-based RESTful API server for the GameVault application.
 - **asyncpg** - Async PostgreSQL driver
 - **Pydantic** - Data validation using schemas
 - **bcrypt** - Password hashing
+- **Alembic** - Database migration tool
 - **Uvicorn** - ASGI server
 
 ## Prerequisites
@@ -45,7 +46,7 @@ pip install fastapi uvicorn sqlalchemy asyncpg pydantic-settings bcrypt alembic
 Create a `.env` file in the backend directory:
 
 ```env
-DATABASE_URL=postgresql+asyncpg://postgres:<your_password>@localhost:5432/gamevault
+DATABASE_URL=postgresql+asyncpg://postgres:<YOUR_DB_PASSWORD>@localhost:5432/gamevault
 ```
 
 The database URL format follows SQLAlchemy's asyncpg connection string syntax.
@@ -76,12 +77,13 @@ python -m uvicorn app.main:app --reload
 
 ## API Endpoints
 
-| Method | Endpoint          | Description                    |
-|--------|-------------------|--------------------------------|
-| GET    | `/`               | Health check / root endpoint   |
-| GET    | `/db-test`        | Database connection test       |
-| POST   | `/api/v1/auth/signup` | User registration           |
-| POST   | `/api/v1/auth/login`  | User authentication          |
+| Method | Endpoint              | Description                    |
+|--------|-----------------------|--------------------------------|
+| GET    | `/`                   | Health check / root endpoint   |
+| GET    | `/db-test`            | Database connection test       |
+| POST   | `/api/v1/auth/signup` | User registration (with password confirmation) |
+| POST   | `/api/v1/auth/login`  | User authentication            |
+| POST   | `/api/v1/auth/logout` | User logout                    |
 
 ## Development
 
@@ -111,23 +113,30 @@ pytest
 backend/
 ├── app/
 │   ├── configs/      # Configuration management (env.py, postgres.py)
+│   │   └── env.py                    # Pydantic settings for environment variables
+│   │   └── postgres.py               # Database initialization and table creation
 │   ├── db/           # Database connections and sessions
 │   │   ├── database.py
 │   │   └── __init__.py
 │   ├── models/       # SQLAlchemy ORM models
-│   │   ├── Base.py
-│   │   └── Users.py
+│   │   ├── Base.py                   # Base model with timestamps (created_at, updated_at)
+│   │   └── Users.py                  # User model with DOB field
 │   ├── routers/      # API route definitions
-│   │   ├── auth.py
-│   │   └── __init__.py
+│   │   ├── auth.py                   # Authentication routes (signup, login, logout)
+│   │   └── __init__.py               # Router prefix configuration (/api/v1)
 │   ├── schemas/      # Pydantic request/response schemas
-│   │   └── users.py
+│   │   └── users.py                  # UserSignUp and UserLogin schemas
 │   ├── services/     # Business logic layer
-│   │   └── auth_services.py
+│   │   └── auth_services.py          # Authentication service (signup, login, logout)
 │   ├── main.py       # Application entry point
 │   └── __init__.py
 ├── .env              # Environment variables
 ├── pyproject.toml    # Project configuration and dependencies
+├── alembic/          # Database migrations
+│   ├── versions/
+│   └── env.py
+├── alembic.ini       # Alembic configuration
+├── nul               # Null file (Windows compatibility)
 └── README.md         # This file
 ```
 
@@ -141,8 +150,23 @@ Ensure PostgreSQL is running and accessible:
 # Check if PostgreSQL is running
 pg_isready -h localhost -p 5432
 
-# Test connection
-psql postgresql+asyncpg://postgres:<your_password>@localhost:5432/gamevault
+# Test connection (replace <YOUR_DB_PASSWORD> with your actual password)
+psql postgresql+asyncpg://postgres:<YOUR_DB_PASSWORD>@localhost:5432/gamevault
+```
+
+### Password Confirmation Error During Signup
+
+The signup endpoint validates password confirmation. Ensure both passwords match:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "<YOUR_PASSWORD>",
+    "confirm_password": "<YOUR_PASSWORD>"
+  }'
 ```
 
 ### Port Already in Use
