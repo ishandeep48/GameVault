@@ -3,7 +3,8 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from .Base import Base
 from uuid import UUID,uuid4
-
+from datetime import date
+from sqlalchemy import Date
 
 
 class User(Base):
@@ -15,3 +16,4 @@ class User(Base):
     password_hash:Mapped[str] = mapped_column(String(255), nullable=False)
     first_name:Mapped[str] = mapped_column(String(255),nullable=False)
     last_name:Mapped[str|None]=mapped_column(String(255),nullable=True)
+    date_of_birth:Mapped[date]=mapped_column(Date,nullable=False)
