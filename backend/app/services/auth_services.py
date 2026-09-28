@@ -9,7 +9,9 @@ import jwt
 
 # Signup service ( the basic logic of the signup , created a new entry in the db ) stays heree
 async def signupUser(user_data:UserSignUp,db:AsyncSession):
-
+    if(user_data.password != user_data.confirm_password):
+        raise ValueError("Password and Confirm Passwords don't match")
+    
     existing_username = await db.scalar(
         select(User).where(
             User.username == user_data.username
