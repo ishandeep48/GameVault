@@ -62,7 +62,10 @@ export default function ProfilePage() {
             </div>
 
             {/* Logout button */}
-            <Button variant="danger" size="sm" onClick={() => { logout(); navigate('/login', { replace: true }) }}>
+            <Button variant="danger" size="sm" onClick={async () => {
+              await logout()
+              navigate('/', { replace: true })
+            }}>
               Logout
             </Button>
           </div>

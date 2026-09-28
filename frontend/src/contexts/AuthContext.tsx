@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import type { User, AuthState, LoginFormData, LoginRequestResult } from '@/types'
-import { loadSession, saveSession, clearSession, login as mockLogin } from '@/services/authService'
+import { loadSession, saveSession, clearSession, logout as apiLogout, login as mockLogin } from '@/services/authService'
 
 interface AuthContextValue extends AuthState {
   login: (user: User) => void
@@ -32,10 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ user, authenticated: true })
   }, [])
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await apiLogout()
     clearSession()
     setState({ user: null, authenticated: false })
-  }, [])
+  }, [apiLogout])
 
   const authenticate = useCallback(async ({ username, password }: LoginFormData): Promise<LoginRequestResult> => {
     const result = await mockLogin({ username: username.trim(), password })

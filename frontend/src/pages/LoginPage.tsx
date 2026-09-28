@@ -42,7 +42,7 @@ export default function LoginPage() {
         return
       }
 
-      navigate('/home', { replace: true })
+      navigate('/', { replace: true })
     } catch {
       setErrors({ general: 'An unexpected error occurred. Please try again.' })
     } finally {

@@ -60,13 +60,13 @@ export function validateSignup(data: SignupFormData): Record<string, string> | n
  */
 export async function login(data: LoginFormData): Promise<{ user: User } | { error: string }> {
   try {
-    await api.post<{ message: string }>('/auth/login', {
+    await api.post('/auth/login', {
       username: data.username.trim(),
       password: data.password,
     })
 
+    // Backend returns success, create mock user for now (real backend not connected)
     const user: User = {
-      // id: data.username.trim(),
       username: data.username.trim(),
       firstName: data.username.trim(),
       lastName: '',
@@ -99,10 +99,9 @@ export async function signup(data: SignupFormData): Promise<{ user: User } | { e
       dateOfBirth: data.dob,
       confirmPassword: data.confirmPassword,
     })
-    // console.log(result)
     const user_data = result.data.user
     const user: User = {
-      username: user_data.username.trim(),
+      username: user_data.username?.trim() || '',
       firstName: user_data.firstName,
       lastName: user_data.lastName,
       email: user_data.email,
@@ -146,14 +145,15 @@ export function loadSession(): SessionData | null {
 }
 
 /**
- * Clear persisted session.
+ * Logout via API and clear local session.
  */
-export function clearSession(): void {
+export async function logout(): Promise<void> {
   try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch {
-    // Ignore
+    await api.post('/auth/logout')
+  } catch (err) {
+    console.error('Logout error:', err)
   }
+  localStorage.removeItem(STORAGE_KEY)
 }
 
 /**
@@ -161,6 +161,13 @@ export function clearSession(): void {
  */
 export function isSessionValid(session: SessionData | null): boolean {
   return session !== null && session.authenticated === true
+}
+
+/**
+ * Clear persisted session (for testing).
+ */
+export function clearSession(): void {
+  localStorage.removeItem(STORAGE_KEY)
 }
 
 function isValidEmail(email: string): boolean {

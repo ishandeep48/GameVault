@@ -38,7 +38,7 @@ export function LoginModal() {
         return
       }
       handleClose()
-      navigate(loginModalFrom ?? '/home')
+      navigate(loginModalFrom || '/')
     } catch {
       setError('An unexpected error occurred. Please try again.')
     } finally {

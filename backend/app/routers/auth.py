@@ -68,4 +68,16 @@ async def login_route(user:UserLogin,respone:Response,db:AsyncSession=Depends(ge
     
     
     
+@router.post("/logout")
+async def logout_user(response:Response):
+    
+    response.delete_cookie(
+        key="access_token"
+    )
+    
+    return{
+        "message":"Logout Successful"
+    }
+    
+    
     
