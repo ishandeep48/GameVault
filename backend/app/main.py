@@ -1,22 +1,24 @@
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
+# from contextlib import asynccontextmanager
 from app.db.database import engine
-from app.configs.postgres import create_tables
+# from app.configs.postgres import create_tables
 import uvicorn
 from sqlalchemy import text
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Runs when the application starts
-    await create_tables()
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     # Runs when the application starts
+#     await create_tables()
 
-    yield
+#     yield
 
-    # Runs when the application shuts down
-    await engine.dispose()
+#     # Runs when the application shuts down
+#     await engine.dispose()
 
 
-app = FastAPI(title="GameVault API",lifespan=lifespan)
+# app = FastAPI(title="GameVault API",lifespan=lifespan)
+app = FastAPI(title="GameVault API")
+
 
 @app.get("/")
 # Default test route to check if the API is running
