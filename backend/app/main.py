@@ -4,6 +4,7 @@ from app.db.database import engine
 # from app.configs.postgres import create_tables
 import uvicorn
 from sqlalchemy import text
+from fastapi.middleware.cors import CORSMiddleware
 
 # @asynccontextmanager
 # async def lifespan(app: FastAPI):
@@ -19,6 +20,13 @@ from sqlalchemy import text
 # app = FastAPI(title="GameVault API",lifespan=lifespan)
 app = FastAPI(title="GameVault API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 # Default test route to check if the API is running

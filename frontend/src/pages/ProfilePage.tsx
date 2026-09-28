@@ -19,12 +19,12 @@ export default function ProfilePage() {
 
   const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
 
-  // Format date of birth for display (YYYY-MM-DD → MM/DD/YYYY)
+  // Format date of birth for display (YYYY-MM-DD → DD/MM/YYYY)
   function formatDob(dob: string): string {
     if (!dob) return 'Not provided'
     const parts = dob.split('-')
     if (parts.length !== 3) return dob
-    return `${parts[1]}/${parts[2]}/${parts[0]}`
+    return `${parts[2]}/${parts[1]}/${parts[0]}`
   }
 
   // Format member since date

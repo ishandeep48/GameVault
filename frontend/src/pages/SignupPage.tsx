@@ -27,6 +27,9 @@ export default function SignupPage() {
     setErrors({})
     setGeneralError('')
 
+    console.log(username, firstName, lastName, email, dob, password, confirmPassword);
+    console.log(`Type of DOB is ${typeof (dob)}`)
+
     // Frontend validation
     const validationErrors = validateSignup({ username, firstName, lastName, email, dob, password, confirmPassword })
     if (validationErrors) {

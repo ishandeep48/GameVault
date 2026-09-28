@@ -14,6 +14,7 @@ from app.configs.env import settings
 max_age_jwt = settings.ACCESS_TOKEN_EXPIRY_MINUTES
 @router.post("/signup")
 async def signup_route(user:UserSignUp,response:Response,db:AsyncSession = Depends(get_db)):
+    # print("Singup hit")
     try:
         new_user = await signupUser(user,db)
     except ValueError as error:
@@ -32,8 +33,17 @@ async def signup_route(user:UserSignUp,response:Response,db:AsyncSession = Depen
         samesite="lax",
         max_age=max_age_jwt
     )
+    user_data ={
+        "username": new_user.username,
+        "firstName": new_user.first_name,
+        "lastName": new_user.last_name,
+        "email": new_user.email,
+        "dob": new_user.date_of_birth,
+        "created_at" :new_user.created_at
+    }
     return {
-        "message":"User created successfully"
+        "message":"User created successfully",
+        "user": user_data
     }
     
     

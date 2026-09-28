@@ -42,7 +42,9 @@ export function validateSignup(data: SignupFormData): Record<string, string> | n
   if (!data.firstName?.trim()) errors.firstName = 'First name is required'
   if (!data.email?.trim()) errors.email = 'Email is required'
   else if (!isValidEmail(data.email)) errors.email = 'Please enter a valid email address'
-  
+
+  if (!data.dob?.trim()) errors.dob = 'Date of birth is required'
+
   if (!data.password) errors.password = 'Password is required'
   else if (data.password.length < 8) errors.password = 'Password must be at least 8 characters'
 
@@ -64,7 +66,7 @@ export async function login(data: LoginFormData): Promise<{ user: User } | { err
     })
 
     const user: User = {
-      id: data.username.trim(),
+      // id: data.username.trim(),
       username: data.username.trim(),
       firstName: data.username.trim(),
       lastName: '',
@@ -85,21 +87,26 @@ export async function login(data: LoginFormData): Promise<{ user: User } | { err
  */
 export async function signup(data: SignupFormData): Promise<{ user: User } | { error: string }> {
   try {
-    await api.post<{ message: string }>('/auth/signup', {
-      username: data.username.trim(),
-      first_name: data.firstName.trim(),
-      last_name: data.lastName?.trim() || null,
-      email: data.email.trim().toLowerCase(),
-      password: data.password,
-    })
-
-    const user: User = {
-      id: data.username.trim(),
+    const result = await api.post<{
+      message: string
+      user: User
+    }>('/auth/signup', {
       username: data.username.trim(),
       firstName: data.firstName.trim(),
-      lastName: data.lastName?.trim() || '',
+      lastName: data.lastName?.trim() || null,
       email: data.email.trim().toLowerCase(),
-      dob: data.dob || '',
+      password: data.password,
+      dateOfBirth: data.dob,
+      confirmPassword: data.confirmPassword,
+    })
+    // console.log(result)
+    const user_data = result.data.user
+    const user: User = {
+      username: user_data.username.trim(),
+      firstName: user_data.firstName,
+      lastName: user_data.lastName,
+      email: user_data.email,
+      dob: user_data.dob || '',
       createdAt: new Date().toISOString(),
     }
 

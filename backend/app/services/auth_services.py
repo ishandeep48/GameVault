@@ -34,7 +34,8 @@ async def signupUser(user_data:UserSignUp,db:AsyncSession):
         email=user_data.email,
         password_hash=hashed_password,
         first_name=user_data.first_name,
-        last_name=user_data.last_name
+        last_name=user_data.last_name,
+        date_of_birth=user_data.date_of_birth
     )
 
     db.add(new_user)
